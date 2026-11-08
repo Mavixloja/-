@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>MEVIX Admin</title>
+<meta name="color-scheme" content="dark light">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("mavix_tema")||"dark"}catch(e){}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=Azeret+Mono:wght@400;500;600&display=swap">
+<style>
+:root{--canvas:#0A0D12;--surface:#10141C;--surface-2:#151A24;--surface-3:#1B2130;--hl:#222A38;--fg:#E8EDF6;--fg-soft:#A7B2C4;--fg-mute:#6E7A8D;--accent:#1FB6FF;--on-accent:#04121C;--wash:rgba(31,182,255,.12);--ok:#34D399;--ok-wash:rgba(52,211,153,.13);--err:#F87171;--err-wash:rgba(248,113,113,.13);--rail:240px;--mono:'Azeret Mono',ui-monospace,Menlo,monospace}
+[data-theme=light]{--canvas:#F4F7FB;--surface:#fff;--surface-2:#fff;--surface-3:#EEF3F9;--hl:#DCE4EF;--fg:#0D1520;--fg-soft:#45566C;--fg-mute:#6B7C93;--accent:#0F8FD6;--on-accent:#fff;--wash:rgba(15,143,214,.1);--ok:#0E9F6E;--ok-wash:rgba(14,159,110,.11);--err:#DC2626;--err-wash:rgba(220,38,38,.1)}
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.45 'Schibsted Grotesk',system-ui,sans-serif;background:var(--canvas);color:var(--fg);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px;color:var(--fg-soft)}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--hl);border-radius:8px;background:var(--surface);color:var(--fg)}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+select option{background:var(--surface);color:var(--fg)}
+input[type=checkbox]{accent-color:var(--accent)}
+.btn{border:0;border-radius:8px;padding:10px 16px;background:var(--accent);color:var(--on-accent);font-weight:600;cursor:pointer;text-align:center;text-decoration:none;display:inline-block}
+.btn.alt{background:var(--surface-3);color:var(--fg);border:1px solid var(--hl)}
+.btn.del{background:transparent;color:var(--err);border:1px solid var(--hl)}
+.btn:disabled{opacity:.55}
+#login,#trocar{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(60% 50% at 50% 0,var(--wash),transparent)}
+.box{background:var(--surface);border:1px solid var(--hl);border-radius:14px;padding:28px 22px;width:100%;max-width:360px}
+.box h1{letter-spacing:.28em;font-size:20px;text-align:center}
+.box p{text-align:center;color:var(--fg-mute);font-size:13px;margin-bottom:8px}
+.erro{color:var(--err);font-size:13px;margin:10px 0;min-height:18px}
+.app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-height:100vh}
+.rail{position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--hl);display:flex;flex-direction:column;padding:16px 12px;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.22em;padding:2px 8px 12px}
+.mk{width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;letter-spacing:0;font-size:15px}
+.gt{font-size:11px;color:var(--fg-mute);text-transform:uppercase;letter-spacing:.08em;padding:16px 10px 6px}
+.nl{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:8px;background:none;color:var(--fg-soft);cursor:pointer;text-align:left;font-weight:500}
+.nl:hover{background:var(--surface-3);color:var(--fg)}
+.nl.on{background:var(--wash);color:var(--accent)}
+.cnt{margin-left:auto;font:600 11px var(--mono);background:var(--accent);color:var(--on-accent);border-radius:99px;padding:1px 7px}
+.cnt:empty{display:none}
+.foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--hl)}
+.cmd{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:10px;height:56px;padding:0 20px;background:color-mix(in srgb,var(--canvas) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--hl)}
+.crumb{color:var(--fg-mute);font-size:14px}.crumb b{color:var(--fg);font-weight:600}
+#mb{display:none;background:none;border:0;padding:6px;cursor:pointer;color:var(--fg)}
+.scrim{display:none}
+main{max-width:980px;padding:20px}
+.bar{display:flex;gap:8px;margin-bottom:12px}
+.item{display:flex;gap:12px;align-items:center;background:var(--surface-2);border:1px solid var(--hl);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.item:hover{border-color:var(--fg-faint,#4A5464)}
+.th{width:48px;height:48px;border-radius:10px;background:var(--surface-3);display:grid;place-items:center;font-size:22px;overflow:hidden;flex:none}
+.th img{width:100%;height:100%;object-fit:cover}
+.in{flex:1;min-width:0}.in b,.in small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.in small{color:var(--fg-mute);font:12px var(--mono);margin-top:2px}
+.tag{font:600 11px var(--mono);padding:4px 9px;border-radius:99px;background:var(--wash);color:var(--accent)}
+.tag.ok{background:var(--ok-wash);color:var(--ok)}.tag.off{background:var(--surface-3);color:var(--fg-mute)}.tag.red{background:var(--err-wash);color:var(--err)}
+.vazio{text-align:center;color:var(--fg-mute);padding:30px}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.card{background:var(--surface);border:1px solid var(--hl);width:100%;max-width:560px;max-height:94vh;overflow:auto;border-radius:16px 16px 0 0;padding:18px 16px 24px}
+.card h2{font-size:18px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fotos{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ft{position:relative;width:76px;height:76px;border-radius:10px;overflow:hidden;background:var(--surface-3)}
+.ft img{width:100%;height:100%;object-fit:cover}
+.ft button{position:absolute;top:2px;right:2px;border:0;border-radius:50%;width:22px;height:22px;background:rgba(0,0,0,.65);color:#fff}
+.ft i{position:absolute;bottom:0;left:0;right:0;background:var(--accent);color:var(--on-accent);font:700 9px/14px var(--mono);text-align:center}
+.chk{display:flex;gap:8px;align-items:center;margin:12px 0 0;color:var(--fg)}.chk input{width:auto}
+.acts{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}.acts .btn{flex:1}
+.ln{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--hl)}
+.ln b{font-weight:600}
+.sec{font-size:11px;font-weight:700;color:var(--fg-mute);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 4px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:var(--surface-2);border:1px solid var(--hl);border-radius:12px;padding:14px}
+.kpi small{color:var(--fg-mute);display:block;font-size:12px;font-weight:600}
+.kpi b{font:500 22px var(--mono);display:block;margin-top:6px}.kpi.alerta b{color:var(--err)}
+.kpi:first-child{grid-column:1/-1}.kpi:first-child b{font-size:clamp(2rem,7vw,3rem);color:var(--accent);letter-spacing:-.02em}
+.chart{display:flex;align-items:flex-end;gap:8px;height:150px;background:var(--surface-2);border:1px solid var(--hl);border-radius:12px;padding:14px 12px 8px}
+.chart div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font:10px var(--mono);color:var(--fg-mute);gap:4px}
+.chart i{display:block;width:100%;background:var(--accent);border-radius:5px 5px 0 0;min-height:2px;opacity:.9}
+.h{font-size:12px;font-weight:700;color:var(--fg-mute);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.np-produtos-criar #novo,.np-categorias-criar [data-n="categorias"],.np-banners-criar [data-n="banners"],.np-cupoes-criar [data-n="cupoes"]{display:none}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--surface-3);border:1px solid var(--hl);color:var(--fg);padding:11px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:90vw}
+#toast.on{opacity:1}
+@media(min-width:700px){.sheet{align-items:center}.card{border-radius:16px}}
+@media(max-width:1023px){
+.app{grid-template-columns:minmax(0,1fr)}
+.rail{position:fixed;left:0;top:0;z-index:30;width:var(--rail);transform:translateX(-100%);transition:transform .22s}
+.app.nav .rail{transform:none}
+.app.nav .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:25}
+#mb{display:grid}
+main{padding:14px}.cmd{padding:0 12px}
+}
+</style>
+</head>
+<body>
+<section id="login" hidden>
+  <form class="box" id="lf">
+    <h1>MEVIX</h1><p>Painel de administração</p>
+    <label for="le">Email</label><input id="le" type="email" autocomplete="username" required>
+    <label for="ls">Palavra-passe</label><input id="ls" type="password" autocomplete="current-password" required>
+    <div class="erro" id="le-erro"></div>
+    <button class="btn" style="width:100%" id="lb">Entrar</button>
+  </form>
+</section>
+
+<section id="trocar" hidden>
+  <form class="box" id="tf">
+    <h1>MEVIX</h1><p>Crie a sua palavra-passe</p>
+    <label for="tp1">Nova palavra-passe (mínimo 8 caracteres)</label><input id="tp1" type="password" autocomplete="new-password" required>
+    <label for="tp2">Repita a palavra-passe</label><input id="tp2" type="password" autocomplete="new-password" required>
+    <div class="erro" id="tp-erro"></div>
+    <button class="btn" style="width:100%">Guardar e entrar</button>
+    <button type="button" class="btn alt" id="tsair" style="width:100%;margin-top:8px">Sair</button>
+  </form>
+</section>
+
+<div id="app" class="app" hidden>
+  <aside class="rail" id="rail">
+    <div class="brand"><span class="mk">M</span>MEVIX</div>
+    <nav>
+      <p class="gt">Monitor</p><button class="nl on" data-t="painel"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg><span>Painel</span></button><button class="nl" data-t="pedidos"><svg viewBox="0 0 24 24"><path d="M6 2l-2 5v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7l-2-5zM4 7h16"/></svg><span>Pedidos</span><span class="cnt" id="nb"></span></button>
+      <p class="gt">Gerir</p><button class="nl" data-t="produtos"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg><span>Produtos</span></button><button class="nl" data-t="categorias"><svg viewBox="0 0 24 24"><path d="M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg><span>Categorias</span></button><button class="nl" data-t="banners"><svg viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 15l5-5 5 5 3-3 5 5"/></svg><span>Banners</span></button><button class="nl" data-t="cupoes"><svg viewBox="0 0 24 24"><path d="M19 5L5 19M7 7.5h.01M17 16.5h.01"/></svg><span>Cupões</span></button>
+      <p class="gt">Configurar</p><button class="nl" data-t="definicoes"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4"/></svg><span>Definições</span></button><button class="nl" data-t="admins"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8"/></svg><span>Equipa</span></button>
+    </nav>
+    <div class="foot">
+      <button class="nl" id="tema"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg><span>Tema claro / escuro</span></button>
+      <button class="nl" id="sair"><svg viewBox="0 0 24 24"><path d="M9 21H5V3h4M16 17l5-5-5-5M21 12H9"/></svg><span>Sair</span></button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div>
+  <header class="cmd"><button id="mb" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><div class="crumb">MEVIX / <b id="ttl">Painel</b></div></header>
+  <main>
+    <section id="t-painel"><div id="pn"></div></section>
+    <section id="t-produtos" hidden>
+      <div class="bar"><input id="q" placeholder="Pesquisar produto…"><button class="btn" id="novo">+ Novo</button></div>
+      <div id="lp"></div>
+    </section>
+    <section id="t-pedidos" hidden>
+      <div class="bar"><select id="fe"><option value="">Todos os estados</option><option>novo</option><option>confirmado</option><option>entregue</option><option>cancelado</option></select></div>
+      <div id="ped"></div>
+    </section>
+    <section id="t-categorias" hidden><div class="bar"><button class="btn" data-n="categorias">+ Nova categoria</button></div><div id="l-categorias"></div></section>
+    <section id="t-banners" hidden><div class="bar"><button class="btn" data-n="banners">+ Novo banner</button></div><div id="l-banners"></div></section>
+    <section id="t-cupoes" hidden><div class="bar"><button class="btn" data-n="cupoes">+ Novo cupão</button></div><div id="l-cupoes"></div></section>
+    <section id="t-definicoes" hidden><div id="ld"></div></section>
+    <section id="t-admins" hidden>
+      <div class="bar"><button class="btn" id="eq-novo">+ Novo funcionário</button></div>
+      <div id="la"></div>
+    </section>
+  </main>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="card" id="sb"></div></div>
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const SB = 'https://dpjuwkxcijkxlvpsueey.supabase.co';
+const KEY = 'sb_publishable_OL9EvVdO5CL6woQL1vKKMQ_wlcNDYhH';
+const db = supabase.createClient(SB, KEY);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (n) => Number(n).toLocaleString('pt-PT') + ' MT';
+const COR = { novo: '', confirmado: 'ok', entregue: 'ok', cancelado: 'red' };
+let cats = [], prods = [], peds = [], fotos = [], editId = null, tt;
+
+function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => e.classList.remove('on'), 2600); }
+function folha(h) { $('#sb').innerHTML = h; $('#sheet').hidden = false; document.body.style.overflow = 'hidden'; }
+function fechar() { $('#sheet').hidden = true; document.body.style.overflow = ''; }
+
+// ===== Sessão =====
+let PERM = new Set(), NIVEL = '', EU = '';
+const pode = (p) => PERM.has(p);
+const exigir = (p) => (pode(p) ? true : (toast('Não tem permissão para esta ação.'), false));
+const NAVPERM = { painel: 'painel:ver', pedidos: 'pedidos:ver', produtos: 'produtos:ver', categorias: 'categorias:ver', banners: 'banners:ver', cupoes: 'cupoes:ver', definicoes: 'definicoes:ver', admins: 'equipa:ver' };
+function aplicarPerm() {
+  const nl = [...document.querySelectorAll('.nl[data-t]')];
+  nl.forEach((b) => { b.hidden = !pode(NAVPERM[b.dataset.t]); });
+  document.querySelectorAll('.rail .gt').forEach((g) => {
+    let n = g.nextElementSibling, vis = false;
+    while (n && !n.classList.contains('gt')) { if (n.matches('.nl[data-t]') && !n.hidden) vis = true; n = n.nextElementSibling; }
+    g.hidden = !vis;
+  });
+  ['produtos', 'categorias', 'banners', 'cupoes'].forEach((s) => document.body.classList.toggle('np-' + s + '-criar', !pode(s + ':criar')));
+  const p = nl.find((b) => !b.hidden);
+  if (p) p.click(); else toast('Esta conta ainda não tem permissões.');
+}
+async function iniciar() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { $('#login').hidden = false; $('#app').hidden = true; $('#trocar').hidden = true; return; }
+  const { data: mp } = await db.rpc('minhas_permissoes');
+  if (!mp) { await db.auth.signOut(); $('#login').hidden = false; $('#app').hidden = true; $('#trocar').hidden = true; $('#le-erro').textContent = 'Esta conta não tem acesso ao painel.'; return; }
+  PERM = new Set(mp.permissoes); NIVEL = mp.nivel; EU = session.user.id;
+  if (session.user.user_metadata && session.user.user_metadata.deve_mudar_senha) { $('#login').hidden = true; $('#app').hidden = true; $('#trocar').hidden = false; return; }
+  $('#login').hidden = true; $('#trocar').hidden = true; $('#app').hidden = false;
+  await Promise.all([carregarCats(), pode('produtos:ver') ? carregarProds() : 0, pode('pedidos:ver') ? carregarPeds() : 0]);
+  pintarPainel(); aplicarPerm();
+}
+$('#lf').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const b = $('#lb'), er = $('#le-erro'); er.textContent = ''; b.disabled = true; b.textContent = 'A entrar…';
+  const { error } = await db.auth.signInWithPassword({ email: $('#le').value.trim(), password: $('#ls').value });
+  b.disabled = false; b.textContent = 'Entrar';
+  if (error) { er.textContent = /invalid/i.test(error.message) ? 'Email ou palavra-passe incorrectos.' : /fetch/i.test(error.message) ? 'Sem ligação à internet.' : error.message; $('#ls').value = ''; return; }
+  iniciar();
+});
+$('#sair').addEventListener('click', async () => { await db.auth.signOut(); iniciar(); });
+$('#tsair').addEventListener('click', async () => { await db.auth.signOut(); iniciar(); });
+$('#tf').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const a = $('#tp1').value, er = $('#tp-erro'); er.textContent = '';
+  if (a.length < 8) { er.textContent = 'Use pelo menos 8 caracteres.'; return; }
+  if (a !== $('#tp2').value) { er.textContent = 'As palavras-passe não coincidem.'; return; }
+  const { error } = await db.auth.updateUser({ password: a, data: { deve_mudar_senha: false } });
+  if (error) { er.textContent = /different/i.test(error.message) ? 'Escolha uma palavra-passe diferente da temporária.' : 'Não foi possível guardar. Tente de novo.'; return; }
+  await db.auth.refreshSession(); $('#tp1').value = ''; $('#tp2').value = ''; iniciar();
+});
+
+// ===== Produtos =====
+async function carregarCats() { const { data } = await db.from('categorias').select('id,nome').order('ordem'); cats = data || []; }
+async function carregarProds() {
+  const { data, error } = await db.from('produtos').select('*').order('criado_em', { ascending: false });
+  if (error) { toast('Erro ao carregar produtos.'); return; }
+  prods = data; pintarProds();
+}
+function pintarProds() {
+  const q = $('#q').value.toLowerCase();
+  $('#lp').innerHTML = prods.filter((p) => p.nome.toLowerCase().includes(q)).map((p) =>
+    `<article class="item" data-p="${p.id}"><div class="th">${p.imagens[0] ? `<img src="${esc(p.imagens[0])}" alt="">` : '📦'}</div>
+    <div class="in"><b>${esc(p.nome)}</b><small>${fmt(p.preco)} · stock ${p.stock}</small></div>
+    <span class="tag ${p.activo ? 'ok' : 'off'}">${p.activo ? 'Activo' : 'Oculto'}</span></article>`).join('') || '<p class="vazio">Sem produtos.</p>';
+}
+function pintarFotos() {
+  $('#fotos').innerHTML = fotos.map((u, i) => `<div class="ft"><img src="${esc(u)}" alt="">${i ? `<button data-fp="${i}" aria-label="Tornar principal">★</button>` : '<i>PRINCIPAL</i>'}<button style="top:auto;bottom:16px;right:2px" data-fr="${i}" aria-label="Remover">✕</button></div>`).join('');
+}
+function abrirProd(id) {
+  const p = id ? prods.find((x) => x.id === id) : { nome: '', descricao: '', categoria_id: '', preco: '', preco_antigo: '', stock: 0, imagens: [], opcoes: [], activo: true, destaque: false };
+  editId = id || null; fotos = [...p.imagens];
+  folha(`<h2>${id ? 'Editar produto' : 'Novo produto'}</h2>
+  <label>Fotos (até 4)</label><div class="fotos" id="fotos"></div>
+  <label class="btn alt" style="display:inline-block;margin:0">+ Adicionar foto<input type="file" id="f-file" accept="image/*" multiple hidden></label>
+  <label>Nome</label><input id="f-nome" value="${esc(p.nome)}">
+  <label>Categoria</label><select id="f-cat"><option value="">Sem categoria</option>${cats.map((c) => `<option value="${c.id}" ${c.id === p.categoria_id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
+  <div class="row"><div><label>Preço (MT)</label><input id="f-preco" type="number" inputmode="decimal" value="${p.preco}"></div>
+  <div><label>Preço antigo (promoção)</label><input id="f-antigo" type="number" inputmode="decimal" value="${p.preco_antigo ?? ''}"></div></div>
+  <div class="row"><div><label>Stock</label><input id="f-stock" type="number" inputmode="numeric" value="${p.stock}"></div>
+  <div><label>Opções (separadas por vírgula)</label><input id="f-op" placeholder="128 GB, 256 GB" value="${esc(p.opcoes.join(', '))}"></div></div>
+  <label>Descrição</label><textarea id="f-desc" rows="3">${esc(p.descricao)}</textarea>
+  <label class="chk"><input type="checkbox" id="f-act" ${p.activo ? 'checked' : ''}> Visível na loja</label>
+  <label class="chk"><input type="checkbox" id="f-dest" ${p.destaque ? 'checked' : ''}> Destaque na página inicial</label>
+  <div class="acts"><button class="btn alt" data-x="fechar">Cancelar</button><button class="btn" id="f-gravar">Guardar</button></div>
+  ${id ? '<div class="acts"><button class="btn del" id="f-apagar">Apagar produto</button></div>' : ''}`);
+  pintarFotos();
+}
+function comprimir(f, max = 1000, tipo = 'image/jpeg') {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); c.toBlob((b) => (b ? res(b) : rej()), tipo, 0.82);
+    };
+    img.onerror = rej; img.src = URL.createObjectURL(f);
+  });
+}
+async function enviarFotos(files) {
+  for (const f of files) {
+    if (fotos.length >= 4) { toast('Máximo de 4 fotos.'); break; }
+    try {
+      const nome = `produtos/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`;
+      const { error } = await db.storage.from('mavix').upload(nome, await comprimir(f), { contentType: 'image/jpeg', cacheControl: '31536000' });
+      if (error) throw error;
+      fotos.push(db.storage.from('mavix').getPublicUrl(nome).data.publicUrl); pintarFotos();
+    } catch (e) { toast('Não foi possível enviar a foto.'); }
+  }
+}
+async function gravarProd() {
+  if (!exigir(editId ? 'produtos:editar' : 'produtos:criar')) return;
+  const nome = $('#f-nome').value.trim(), preco = parseFloat($('#f-preco').value);
+  if (!nome || isNaN(preco) || preco < 0) { toast('Indique o nome e o preço.'); return; }
+  const antigo = parseFloat($('#f-antigo').value);
+  const d = {
+    nome, descricao: $('#f-desc').value.trim(), categoria_id: $('#f-cat').value || null, preco,
+    preco_antigo: antigo > preco ? antigo : null, stock: Math.max(0, parseInt($('#f-stock').value) || 0),
+    opcoes: $('#f-op').value.split(',').map((s) => s.trim()).filter(Boolean), imagens: fotos,
+    activo: $('#f-act').checked, destaque: $('#f-dest').checked
+  };
+  const b = $('#f-gravar'); b.disabled = true; b.textContent = 'A guardar…';
+  const { error } = editId ? await db.from('produtos').update(d).eq('id', editId) : await db.from('produtos').insert(d);
+  if (error) { toast('Erro ao guardar: ' + error.message); b.disabled = false; b.textContent = 'Guardar'; return; }
+  fechar(); toast('Produto guardado.'); carregarProds();
+}
+async function apagarProd() {
+  if (!exigir('produtos:eliminar')) return;
+  if (!confirm('Apagar este produto de vez? Para só esconder, desmarque "Visível na loja".')) return;
+  const { error } = await db.from('produtos').delete().eq('id', editId);
+  if (error) { toast('Erro ao apagar.'); return; }
+  fechar(); toast('Produto apagado.'); carregarProds();
+}
+
+// ===== Pedidos =====
+async function carregarPeds() {
+  const { data, error } = await db.from('pedidos').select('*').order('criado_em', { ascending: false }).limit(500);
+  if (error) { toast('Erro ao carregar pedidos.'); return; }
+  peds = data; pintarPeds();
+}
+function pintarPeds() {
+  const f = $('#fe').value, l = peds.filter((p) => !f || p.estado === f);
+  $('#ped').innerHTML = l.map((p) => `<article class="item" data-o="${p.id}"><div class="in"><b>#${p.id} · ${esc(p.cliente_nome)}</b>
+    <small>${fmt(p.total)} · ${new Date(p.criado_em).toLocaleString('pt-PT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</small></div>
+    <span class="tag ${COR[p.estado] || ''}">${esc(p.estado)}</span></article>`).join('') || '<p class="vazio">Sem pedidos.</p>';
+  const n = peds.filter((p) => p.estado === 'novo').length; $('#nb').textContent = n || '';
+}
+function abrirPed(id) {
+  const p = peds.find((x) => x.id === id), t = String(p.cliente_telefone).replace(/\D/g, ''), wa = 'https://wa.me/' + (t.length === 9 ? '258' + t : t);
+  editId = id;
+  folha(`<h2>Pedido #${p.id}</h2>
+  <div class="sec">Itens</div>
+  ${(p.itens || []).map((i) => `<div class="ln"><span>${esc(i.nome)}${i.opcao ? ' (' + esc(i.opcao) + ')' : ''} × ${esc(i.qtd)}</span><b>${fmt(i.preco * i.qtd)}</b></div>`).join('')}
+  <div class="ln"><span>Subtotal</span><span>${fmt(p.subtotal)}</span></div>
+  ${Number(p.desconto) ? `<div class="ln"><span>Cupão ${esc(p.cupao)}</span><span>−${fmt(p.desconto)}</span></div>` : ''}
+  <div class="ln"><b>Total</b><b>${fmt(p.total)}</b></div>
+  <div class="sec">Cliente</div>
+  <div class="ln"><span>Nome</span><b>${esc(p.cliente_nome)}</b></div>
+  <div class="ln"><span>Celular</span><b>${esc(p.cliente_telefone)}</b></div>
+  <div class="ln"><span>Local</span><b>${esc(p.cliente_bairro)}, ${esc(p.cliente_provincia)}</b></div>
+  ${p.notas ? `<div class="ln"><span>Notas</span><b>${esc(p.notas)}</b></div>` : ''}
+  <label>Estado</label><select id="o-est">${['novo', 'confirmado', 'entregue', 'cancelado'].map((s) => `<option ${s === p.estado ? 'selected' : ''}>${s}</option>`).join('')}</select>
+  <div class="acts"><a class="btn alt" href="${wa}" target="_blank" rel="noopener">WhatsApp do cliente</a><button class="btn" id="o-gravar">Guardar estado</button></div>
+  <div class="acts"><button class="btn alt" data-x="fechar">Fechar</button></div>`);
+}
+async function gravarPed() {
+  if (!exigir('pedidos:editar')) return;
+  const { error } = await db.from('pedidos').update({ estado: $('#o-est').value }).eq('id', editId);
+  if (error) { toast('Erro ao guardar o estado.'); return; }
+  fechar(); toast('Estado actualizado.'); carregarPeds();
+}
+
+// ===== Categorias, banners e cupões =====
+const NOMES = { categorias: 'categoria', banners: 'banner', cupoes: 'cupão' };
+const POS = { hero: 'Principal', cartao: 'Cartão grande', trio: 'Cartão pequeno', faixa: 'Faixa escura' };
+const MAX = { hero: 1, cartao: 2, trio: 3, faixa: 2 };
+const FORMA = {
+  hero: { med: '1200×1000 px (quase quadrada)', css: 'aspect-ratio:35/32;', bg: 'linear-gradient(135deg,#1e2a78,#2b3da8)' },
+  cartao: { med: '1200×900 px (4:3)', css: 'aspect-ratio:35/26;', bg: 'linear-gradient(135deg,#7c3aed,#c026d3)' },
+  trio: { med: '600×1100 px (vertical)', css: 'aspect-ratio:105/200;width:112px;', bg: 'linear-gradient(135deg,#f97316,#ea580c)' },
+  faixa: { med: '1200×720 px (5:3)', css: 'aspect-ratio:35/21;', bg: 'linear-gradient(135deg,#111827,#1f2937)' }
+};
+const ESQ = {
+  categorias: { pk: 'id', ord: 'ordem', campos: [['nome', 'Nome', 'text'], ['imagem_url', 'Imagem da categoria (quadrada fica melhor)', 'img'], ['ordem', 'Ordem', 'number'], ['activo', 'Visível na loja', 'bool']],
+    linha: (r) => [esc(r.nome), 'Ordem ' + r.ordem, r.activo], thumb: (r) => r.imagem_url },
+  banners: { pk: 'id', ord: 'ordem', campos: [
+    ['posicao', 'Onde aparece', 'sel', [['hero', 'Principal (topo da página)'], ['cartao', 'Cartão grande'], ['trio', 'Cartão pequeno (3 em linha)'], ['faixa', 'Faixa escura']]],
+    ['imagem_url', 'Foto de fundo (opcional)', 'img'],
+    ['foco', 'Parte importante da foto', 'sel', [['center', 'Centro'], ['left', 'Esquerda'], ['right', 'Direita'], ['top', 'Topo'], ['bottom', 'Em baixo']]],
+    ['etiqueta', 'Etiqueta (linha pequena de cima)', 'text'],
+    ['titulo', 'Título (Enter muda de linha)', 'area'],
+    ['texto', 'Frase de apoio (só no principal e nas faixas)', 'text'],
+    ['botao', 'Texto do botão (opcional)', 'text'],
+    ['categoria_id', 'Ao clicar, abrir a categoria', 'catsel'],
+    ['ordem', 'Ordem dentro da posição', 'number'],
+    ['activo', 'Visível na loja', 'bool']],
+    linha: (r) => [esc((r.titulo || 'Banner ' + r.id).replace(/\n/g, ' ')), (POS[r.posicao] || r.posicao) + ' · ordem ' + r.ordem, r.activo], thumb: (r) => r.imagem_url },
+  cupoes: { pk: 'codigo', ord: 'codigo', campos: [['codigo', 'Código', 'text', 'novo'], ['nome', 'Nome', 'text'], ['percentagem', 'Desconto (%)', 'number'], ['limite_usos', 'Limite de usos (vazio = sem limite)', 'number'], ['expira_em', 'Válido até', 'date'], ['activo', 'Activo', 'bool']],
+    linha: (r) => [esc(r.codigo), `${r.percentagem}% · ${r.total_usos} usos`, r.activo] }
+};
+let dados = { categorias: [], banners: [], cupoes: [] }, esq = null, reg = null, def = {};
+
+async function carregar(t) {
+  const { data, error } = await db.from(t).select('*').order(ESQ[t].ord);
+  if (error) { toast('Erro ao carregar.'); return; }
+  if (t === 'banners') { const O = ['hero', 'cartao', 'trio', 'faixa']; data.sort((a, b) => O.indexOf(a.posicao) - O.indexOf(b.posicao) || a.ordem - b.ordem); }
+  dados[t] = data; pintarLista(t);
+}
+function pintarLista(t) {
+  const E = ESQ[t];
+  $('#l-' + t).innerHTML = dados[t].map((r) => {
+    const [a, b, on] = E.linha(r);
+    return `<article class="item" data-e="${t}" data-k="${esc(r[E.pk])}">${E.thumb ? `<div class="th">${E.thumb(r) ? `<img src="${esc(E.thumb(r))}" alt="">` : '🖼'}</div>` : ''}
+    <div class="in"><b>${a}</b><small>${b}</small></div><span class="tag ${on ? 'ok' : 'off'}">${on ? 'Activo' : 'Oculto'}</span></article>`;
+  }).join('') || '<p class="vazio">Nada criado ainda.</p>';
+}
+function abrirReg(t, k) {
+  const E = ESQ[t], r = k != null ? dados[t].find((x) => String(x[E.pk]) === String(k)) : null;
+  esq = t; reg = r;
+  folha(`<h2>${r ? 'Editar' : (t === 'categorias' ? 'Nova' : 'Novo')} ${NOMES[t]}</h2>` + E.campos.map(([c, l, tp, flag]) => {
+    const v = r ? r[c] : (c === 'activo' ? true : c === 'ordem' ? dados[t].length + 1 : '');
+    if (tp === 'bool') return `<label class="chk"><input type="checkbox" id="r-${c}" ${v ? 'checked' : ''}> ${l}</label>`;
+    if (tp === 'sel' || tp === 'catsel') {
+      const ops = tp === 'catsel' ? [['', 'Mostrar todos os produtos'], ...cats.map((x) => [x.id, x.nome])] : flag, sv = String(v || (c === 'posicao' ? 'cartao' : ops[0][0]));
+      return `<label>${l}</label><select id="r-${c}">${ops.map(([o, n]) => `<option value="${esc(o)}" ${String(o) === sv ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>`;
+    }
+    if (tp === 'area') return `<label>${l}</label><textarea id="r-${c}" rows="2">${esc(v ?? '')}</textarea>`;
+    if (tp === 'img') return `<label>${l}</label><div class="fotos" id="r-prev">${v ? `<div class="ft" style="width:100%;height:110px"><img src="${esc(v)}" alt=""></div>` : ''}</div>
+      <label class="btn alt" style="display:inline-block;margin:0">${v ? 'Trocar' : 'Enviar'} imagem<input type="file" id="r-file" accept="image/*" hidden></label><button type="button" class="btn alt" data-rmimg style="margin-left:8px">Remover foto</button><input type="hidden" id="r-${c}" value="${esc(v)}">`;
+    const val = tp === 'date' && v ? String(v).slice(0, 10) : (v ?? '');
+    return `<label>${l}</label><input id="r-${c}" type="${tp}" ${tp === 'number' ? 'inputmode="decimal"' : ''} value="${esc(val)}" ${flag === 'novo' && r ? 'readonly' : ''}>`;
+  }).join('') + (t === 'banners' ? '<div class="sec">Pré-visualização no telemóvel</div><div id="r-pv"></div>' : '') + `<div class="acts"><button class="btn alt" data-x="fechar">Cancelar</button><button class="btn" id="r-gravar">Guardar</button></div>` +
+  (r ? '<div class="acts"><button class="btn del" id="r-apagar">Apagar</button></div>' : ''));
+  if (t === 'banners') pvBanner();
+}
+
+function pvBanner() {
+  const v = (c) => ($('#r-' + c) ? $('#r-' + c).value : '');
+  const p = v('posicao') || 'cartao', F = FORMA[p], img = v('imagem_url'), foco = v('foco') || 'center', trio = p === 'trio';
+  const grad = img ? (trio ? 'linear-gradient(0deg,rgba(8,10,24,.82),rgba(8,10,24,.1) 70%)' : 'linear-gradient(90deg,rgba(8,10,24,.78),rgba(8,10,24,.45) 55%,rgba(8,10,24,.05))') : 'none';
+  $('#r-pv').innerHTML = `<div style="position:relative;overflow:hidden;border-radius:20px;color:#fff;background:${F.bg};${F.css}max-width:100%;${trio ? '' : 'width:100%;'}">
+    ${img ? `<img src="${esc(img)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${esc(foco)}">` : ''}
+    <div style="position:absolute;inset:0;background:${grad}"></div>
+    <div style="position:relative;height:100%;padding:${trio ? '14px 12px' : '22px'};display:flex;flex-direction:column;justify-content:${trio ? 'space-between' : 'center'};gap:8px">
+      <span style="font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;opacity:.85">${esc(v('etiqueta'))}</span>
+      <b style="font-size:${trio ? 15 : p === 'hero' ? 26 : 22}px;line-height:1.15">${esc(v('titulo')).replace(/\n/g, '<br>') || 'Título do banner'}</b>
+      ${(p === 'hero' || p === 'faixa') && v('texto') ? `<span style="font-size:13px;opacity:.9">${esc(v('texto'))}</span>` : ''}
+      <span style="align-self:flex-start;border:1.5px solid rgba(255,255,255,.85);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:600">${esc(v('botao') || (trio ? 'Ver mais' : 'Comprar agora'))}</span>
+    </div></div>
+  <p style="font-size:12px;color:var(--fg-mute);margin-top:8px">Medida recomendada: <b>${F.med}</b>. ${img ? 'Use o ponto de foco para escolher a parte da foto que não pode ser cortada.' : 'Sem foto, o cartão fica só com a cor.'}</p>`;
+}
+
+async function gravarReg() {
+  if (!exigir(esq + ':' + (reg ? 'editar' : 'criar'))) return;
+  const E = ESQ[esq], d = {};
+  for (const [c, , tp] of E.campos) {
+    const el = $('#r-' + c);
+    if (tp === 'bool') d[c] = el.checked;
+    else if (tp === 'number') d[c] = el.value === '' ? (c === 'ordem' ? 0 : null) : parseFloat(el.value);
+    else if (tp === 'date') d[c] = el.value ? new Date(el.value + 'T23:59:59').toISOString() : null;
+    else if (tp === 'catsel') d[c] = el.value ? Number(el.value) : null;
+    else d[c] = el.value.trim();
+  }
+  if (esq === 'categorias' && !d.nome) return toast('Indique o nome.');
+  if (esq === 'banners') {
+    if (!d.titulo && !d.etiqueta) return toast('Indique o título ou a etiqueta.');
+    const outros = dados.banners.filter((x) => x.posicao === d.posicao && x.activo && (!reg || x.id !== reg.id)).length;
+    if (d.activo && outros >= MAX[d.posicao]) return toast(`Já há ${MAX[d.posicao]} activo(s) nesta posição. Esconda um primeiro.`);
+  }
+  if (esq === 'cupoes') {
+    d.codigo = (d.codigo || '').toUpperCase().replace(/\s/g, '');
+    if (!d.codigo || !d.nome) return toast('Indique o código e o nome.');
+    if (!(d.percentagem > 0 && d.percentagem <= 100)) return toast('O desconto deve estar entre 1 e 100.');
+  }
+  const { error } = reg ? await db.from(esq).update(d).eq(E.pk, reg[E.pk]) : await db.from(esq).insert(d);
+  if (error) return toast(/duplicate/i.test(error.message) ? 'Esse código já existe.' : 'Erro ao guardar: ' + error.message);
+  const t = esq; fechar(); toast('Guardado.'); await carregar(t); if (t === 'categorias') carregarCats();
+}
+async function apagarReg() {
+  if (!exigir(esq + ':eliminar')) return;
+  const aviso = esq === 'categorias' ? 'Apagar a categoria? Os produtos ficam sem categoria.' : 'Apagar de vez? Para só esconder, desmarque "Visível".';
+  if (!confirm(aviso)) return;
+  const { error } = await db.from(esq).delete().eq(ESQ[esq].pk, reg[ESQ[esq].pk]);
+  if (error) return toast('Erro ao apagar.');
+  const t = esq; fechar(); toast('Apagado.'); await carregar(t); if (t === 'categorias') carregarCats();
+}
+async function enviarUma(file, pasta, max, tipo) {
+  const nome = `${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${tipo === 'image/png' ? 'png' : 'jpg'}`;
+  const { error } = await db.storage.from('mavix').upload(nome, await comprimir(file, max, tipo), { contentType: tipo, cacheControl: '31536000' });
+  if (error) throw error;
+  return db.storage.from('mavix').getPublicUrl(nome).data.publicUrl;
+}
+
+// ===== Definições =====
+const DEF = [['nome', 'Nome da loja'], ['slogan', 'Slogan'], ['whatsapp', 'WhatsApp (com indicativo, só números)'], ['facebook', 'Facebook (ligação)'], ['instagram', 'Instagram (ligação)'], ['tiktok', 'TikTok (ligação)']];
+async function carregarDef() {
+  const { data, error } = await db.from('definicoes').select('chave,valor');
+  if (error) return toast('Erro ao carregar as definições.');
+  def = Object.fromEntries(data.map((x) => [x.chave, x.valor]));
+  $('#ld').innerHTML = '<div class="item" style="display:block;cursor:default">' + DEF.map(([c, l]) => `<label>${l}</label><input id="d-${c}" value="${esc(def[c])}">`).join('') +
+    `<label>Logótipo (fundo transparente fica melhor)</label><div class="fotos" id="d-prev">${def.logo_url ? `<div class="ft" style="width:140px;background:#e2e8f0"><img src="${esc(def.logo_url)}" alt="" style="object-fit:contain"></div>` : ''}</div>
+    <label class="btn alt" style="display:inline-block;margin:0">Enviar logótipo<input type="file" id="d-file" accept="image/*" hidden></label>
+    <input type="hidden" id="d-logo_url" value="${esc(def.logo_url)}">
+    <div class="acts"><button class="btn" id="d-gravar">Guardar definições</button></div></div>`;
+}
+async function gravarDef() {
+  if (!exigir('definicoes:editar')) return;
+  const linhas = [...DEF.map(([c]) => c), 'logo_url'].map((c) => ({ chave: c, valor: c === 'whatsapp' ? $('#d-' + c).value.replace(/\D/g, '') : $('#d-' + c).value.trim() }));
+  const { error } = await db.from('definicoes').upsert(linhas);
+  toast(error ? 'Erro ao guardar.' : 'Definições guardadas.');
+}
+
+// ===== Painel =====
+function pintarPainel() {
+  const dia = (d) => new Date(d).toLocaleDateString('sv-SE'), hoje = dia(new Date());
+  const serie = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return { k: dia(d), n: d.toLocaleDateString('pt-PT', { weekday: 'short' }).replace('.', ''), v: 0 }; });
+  peds.filter((p) => p.estado !== 'cancelado').forEach((p) => { const s = serie.find((x) => x.k === dia(p.criado_em)); if (s) s.v += Number(p.total); });
+  const max = Math.max(1, ...serie.map((s) => s.v)), semana = serie.reduce((a, s) => a + s.v, 0);
+  const baixo = prods.filter((p) => p.activo && p.stock <= 5).sort((a, b) => a.stock - b.stock);
+  const novos = peds.filter((p) => p.estado === 'novo').length, hojeN = peds.filter((p) => dia(p.criado_em) === hoje).length;
+  $('#pn').innerHTML = `<div class="kpis"><div class="kpi"><small>Receita (7 dias)</small><b>${fmt(semana)}</b></div><div class="kpi"><small>Pedidos novos</small><b>${novos}</b></div>
+    <div class="kpi"><small>Pedidos hoje</small><b>${hojeN}</b></div><div class="kpi ${baixo.length ? 'alerta' : ''}"><small>Produtos com stock baixo</small><b>${baixo.length}</b></div></div>
+    <div class="h">Receita por dia</div><div class="chart">${serie.map((s) => `<div title="${fmt(s.v)}"><i style="height:${s.v / max * 80}%"></i><span>${s.n}</span></div>`).join('')}</div>
+    <div class="h">Stock baixo (5 ou menos)</div>${baixo.map((p) => `<article class="item" data-p="${p.id}"><div class="th">${p.imagens[0] ? `<img src="${esc(p.imagens[0])}" alt="">` : '📦'}</div>
+      <div class="in"><b>${esc(p.nome)}</b><small>${fmt(p.preco)}</small></div><span class="tag ${p.stock ? '' : 'red'}">${p.stock ? 'Stock ' + p.stock : 'Esgotado'}</span></article>`).join('') || '<p class="vazio">Tudo com stock.</p>'}
+    <div class="h">Últimos pedidos</div>${peds.slice(0, 5).map((p) => `<article class="item" data-o="${p.id}"><div class="in"><b>#${p.id} · ${esc(p.cliente_nome)}</b><small>${fmt(p.total)}</small></div><span class="tag ${COR[p.estado] || ''}">${esc(p.estado)}</span></article>`).join('') || '<p class="vazio">Ainda sem pedidos.</p>'}`;
+}
+
+// ===== Equipa =====
+const crud = (n) => [[n + ':ver', 'Ver'], [n + ':criar', 'Criar'], [n + ':editar', 'Editar'], [n + ':eliminar', 'Apagar']];
+const GRUPOS = [
+  ['Painel', [['painel:ver', 'Ver o painel']]],
+  ['Pedidos', [['pedidos:ver', 'Ver'], ['pedidos:editar', 'Mudar o estado'], ['pedidos:eliminar', 'Apagar']]],
+  ['Produtos', crud('produtos')], ['Categorias', crud('categorias')], ['Banners', crud('banners')], ['Cupões', crud('cupoes')],
+  ['Definições', [['definicoes:ver', 'Ver'], ['definicoes:editar', 'Editar']]],
+  ['Equipa', [['equipa:ver', 'Ver'], ['equipa:criar', 'Criar'], ['equipa:editar', 'Editar'], ['equipa:eliminar', 'Remover']]]
+];
+const MODELOS = {
+  funcionario: ['painel:ver', 'pedidos:ver', 'pedidos:editar', 'produtos:ver', 'categorias:ver'],
+  gerente: ['painel:ver', 'pedidos:ver', 'pedidos:editar', 'pedidos:eliminar', ...crud('produtos').map((x) => x[0]), ...crud('categorias').map((x) => x[0]), ...crud('banners').map((x) => x[0]), ...crud('cupoes').map((x) => x[0]), 'definicoes:ver']
+};
+const NIVEIS = { proprietario: 'Proprietário', gerente: 'Gerente', funcionario: 'Funcionário' };
+const ERROS = { EMAIL_JA_EXISTE: 'Esse email já tem conta. Use outro.', EMAIL_INVALIDO: 'Email inválido.', NOME_EM_FALTA: 'Indique o nome.', SENHA_CURTA: 'A palavra-passe precisa de 8 caracteres.', SEM_PERMISSAO: 'Não tem permissão para esta ação.', APENAS_PROPRIETARIO: 'Só o proprietário pode fazer isto.', SEM_PERMISSAO_PARA_CONCEDER: 'Não pode dar permissões que não tem.', NAO_PODE_ALTERAR_PROPRIETARIO: 'O proprietário não pode ser alterado.', NAO_PODE_ALTERAR_SI: 'Não pode alterar a sua própria conta aqui.' };
+const msgErro = (e) => ERROS[String(e.message)] || 'Ocorreu um erro. Tente de novo.';
+let equipa = [], membro = null;
+
+function gerarSenha() {
+  const a = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789', v = new Uint32Array(10);
+  crypto.getRandomValues(v); return [...v].map((x) => a[x % a.length]).join('');
+}
+async function chamarEquipa(corpo) {
+  const { data: { session } } = await db.auth.getSession();
+  const r = await fetch(SB + '/functions/v1/equipa', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + session.access_token }, body: JSON.stringify(corpo) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.erro || 'ERRO');
+  return j;
+}
+async function carregarAdmins() {
+  $('#eq-novo').hidden = !pode('equipa:criar');
+  const { data, error } = await db.rpc('admin_listar_admins');
+  if (error) return toast('Não foi possível carregar a equipa.');
+  equipa = data;
+  $('#la').innerHTML = data.map((a, i) => `<article class="item" data-eq="${i}"><div class="th">👤</div><div class="in"><b>${esc(a.nome || a.email)}</b><small>${esc(a.email)}${a.user_id === EU ? ' · você' : ''}</small></div>
+    <span class="tag ${a.activo ? (a.nivel === 'proprietario' ? '' : 'ok') : 'off'}">${a.activo ? NIVEIS[a.nivel] : 'Desactivado'}</span></article>`).join('');
+}
+function permHtml(sel, bloqueado) {
+  return GRUPOS.map(([g, it]) => `<div class="sec">${g}</div><div class="pg">${it.map(([k, l]) => `<label class="chk"><input type="checkbox" data-pm="${k}" ${sel.has(k) ? 'checked' : ''} ${!pode(k) || bloqueado ? 'disabled' : ''}> ${l}</label>`).join('')}</div>`).join('');
+}
+function abrirMembro(i) {
+  const a = i == null ? null : equipa[i]; membro = a;
+  const dono = NIVEL === 'proprietario', alvoDono = !!a && a.nivel === 'proprietario';
+  const editavel = !alvoDono && (a ? pode('equipa:editar') && a.user_id !== EU && (dono || a.nivel === 'funcionario') : true);
+  const sel = new Set(a ? (alvoDono ? [...PERM] : a.permissoes) : MODELOS.funcionario);
+  folha(`<div id="eq-form"><h2>${a ? esc(a.nome || a.email) : 'Novo funcionário'}</h2>
+  <label>Nome</label><input id="eq-nome" value="${esc(a ? a.nome : '')}" ${a ? 'readonly' : ''}>
+  <label>Email</label><input id="eq-email" type="email" autocapitalize="off" value="${esc(a ? a.email : '')}" ${a ? 'readonly' : ''}>
+  <label>Contacto (WhatsApp)</label><input id="eq-cont" inputmode="tel" value="${esc(a ? a.contacto : '')}" ${a ? 'readonly' : ''}>
+  <label>Nível</label><select id="eq-nivel" ${editavel ? '' : 'disabled'}>${alvoDono ? '<option>Proprietário</option>' : `<option value="funcionario" ${a && a.nivel === 'gerente' ? '' : 'selected'}>Funcionário</option>${dono || (a && a.nivel === 'gerente') ? `<option value="gerente" ${a && a.nivel === 'gerente' ? 'selected' : ''}>Gerente</option>` : ''}`}</select>
+  ${editavel ? '<div class="acts" style="margin-top:8px"><button class="btn alt" data-modelo="funcionario">Modelo funcionário</button><button class="btn alt" data-modelo="gerente">Modelo gerente</button></div>' : ''}
+  ${a ? '' : `<label>Palavra-passe temporária</label><div class="bar"><input id="eq-senha" readonly value="${gerarSenha()}" style="font-family:var(--mono)"><button class="btn alt" id="eq-gerar" type="button">Outra</button></div>`}
+  ${permHtml(sel, !editavel)}
+  <div class="acts"><button class="btn alt" data-x="fechar">Fechar</button>${editavel ? `<button class="btn" id="eq-gravar">${a ? 'Guardar' : 'Criar funcionário'}</button>` : ''}</div>
+  ${a && editavel ? `<div class="acts"><button class="btn alt" id="eq-redef">Nova palavra-passe</button><button class="btn alt" id="eq-act">${a.activo ? 'Desactivar' : 'Reactivar'}</button><button class="btn del" id="eq-rem">Remover</button></div>` : ''}</div>`);
+}
+function ligarPerm(el) {
+  const [sec, acc] = el.dataset.pm.split(':');
+  if (el.checked && acc !== 'ver') { const v = document.querySelector(`[data-pm="${sec}:ver"]`); if (v && !v.disabled) v.checked = true; }
+  if (!el.checked && acc === 'ver') document.querySelectorAll(`[data-pm^="${sec}:"]`).forEach((c) => { if (!c.disabled) c.checked = false; });
+}
+function aplicarModelo(m) {
+  document.querySelectorAll('[data-pm]').forEach((c) => { if (!c.disabled) c.checked = MODELOS[m].includes(c.dataset.pm); });
+  const s = $('#eq-nivel'); if ([...s.options].some((o) => o.value === m)) s.value = m;
+}
+function mostrarCred(titulo, nome, email, senha, contacto) {
+  const msg = `Olá ${nome}! Foi criada a sua conta no painel da MEVIX.\nEndereço: ${location.origin + location.pathname}\nEmail: ${email}\nPalavra-passe temporária: ${senha}\nAo entrar, vai criar a sua própria palavra-passe.`;
+  const t = String(contacto || '').replace(/\D/g, ''), wa = 'https://wa.me/' + (t.length === 9 ? '258' + t : t) + '?text=' + encodeURIComponent(msg);
+  folha(`<h2>${titulo}</h2><p class="vazio" style="padding:10px 0;text-align:left">Esta palavra-passe só aparece agora. Envie-a à pessoa.</p>
+  <div class="item" style="display:block;cursor:default"><div class="ln"><span>Email</span><b>${esc(email)}</b></div><div class="ln"><span>Palavra-passe</span><b style="font-family:var(--mono)">${esc(senha)}</b></div></div>
+  <div class="acts"><a class="btn" href="${wa}" target="_blank" rel="noopener">Enviar por WhatsApp</a><button class="btn alt" id="cr-copiar" data-msg="${esc(msg)}">Copiar</button></div>
+  <div class="acts"><button class="btn alt" data-x="fechar">Concluir</button></div>`);
+}
+async function gravarMembro() {
+  const nivel = $('#eq-nivel').value, perms = [...document.querySelectorAll('[data-pm]')].filter((c) => c.checked).map((c) => c.dataset.pm), bt = $('#eq-gravar');
+  bt.disabled = true;
+  try {
+    if (membro) {
+      const { error } = await db.rpc('admin_definir_permissoes', { p_user: membro.user_id, p_nivel: nivel, p_permissoes: perms });
+      if (error) throw new Error((error.message.match(/[A-Z_]{5,}/) || [''])[0]);
+      fechar(); toast('Permissões guardadas.'); carregarAdmins();
+    } else {
+      const nome = $('#eq-nome').value.trim(), email = $('#eq-email').value.trim(), contacto = $('#eq-cont').value.trim(), senha = $('#eq-senha').value;
+      if (!nome || !email) { toast('Indique o nome e o email.'); bt.disabled = false; return; }
+      await chamarEquipa({ accao: 'criar', nome, email, contacto, nivel, permissoes: perms, senha });
+      mostrarCred('Funcionário criado', nome, email, senha, contacto); carregarAdmins();
+    }
+  } catch (e) { toast(msgErro(e)); }
+  bt.disabled = false;
+}
+async function redefinirMembro() {
+  if (!confirm('Criar uma nova palavra-passe temporária para esta pessoa?')) return;
+  const senha = gerarSenha();
+  try { await chamarEquipa({ accao: 'redefinir_senha', user_id: membro.user_id, senha }); mostrarCred('Nova palavra-passe', membro.nome || membro.email, membro.email, senha, membro.contacto); }
+  catch (e) { toast(msgErro(e)); }
+}
+async function alternarMembro() {
+  try { await chamarEquipa({ accao: 'activar', user_id: membro.user_id, activo: !membro.activo }); fechar(); toast(membro.activo ? 'Acesso desactivado.' : 'Acesso reactivado.'); carregarAdmins(); }
+  catch (e) { toast(msgErro(e)); }
+}
+async function removerMembro() {
+  if (!confirm('Remover esta pessoa de vez? A conta é apagada.')) return;
+  try { await chamarEquipa({ accao: 'remover', user_id: membro.user_id }); fechar(); toast('Funcionário removido.'); carregarAdmins(); }
+  catch (e) { toast(msgErro(e)); }
+}
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-eq],#eq-novo,#eq-gravar,#eq-gerar,#eq-redef,#eq-act,#eq-rem,[data-modelo],#cr-copiar');
+  if (!t) return;
+  if (t.dataset.eq !== undefined) abrirMembro(+t.dataset.eq);
+  else if (t.id === 'eq-novo') abrirMembro(null);
+  else if (t.id === 'eq-gravar') gravarMembro();
+  else if (t.id === 'eq-gerar') $('#eq-senha').value = gerarSenha();
+  else if (t.id === 'eq-redef') redefinirMembro();
+  else if (t.id === 'eq-act') alternarMembro();
+  else if (t.id === 'eq-rem') removerMembro();
+  else if (t.dataset.modelo) aplicarModelo(t.dataset.modelo);
+  else if (t.id === 'cr-copiar') { navigator.clipboard.writeText(t.dataset.msg).then(() => toast('Copiado.'), () => toast('Não foi possível copiar.')); }
+});
+document.addEventListener('change', (e) => { if (e.target.dataset && e.target.dataset.pm !== undefined) ligarPerm(e.target); });
+
+// ===== Eventos =====
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-t],[data-p],[data-o],[data-fp],[data-fr],[data-x],[data-e],[data-n],[data-ra],[data-rmimg],#a-add,#novo,#f-gravar,#f-apagar,#o-gravar,#r-gravar,#r-apagar,#d-gravar');
+  if (e.target.id === 'sheet') return fechar();
+  if (!t) return;
+  if (t.dataset.t) {
+    document.querySelectorAll('.nl[data-t]').forEach((b) => b.classList.toggle('on', b === t));
+    $('#ttl').textContent = t.querySelector('span').textContent; $('#app').classList.remove('nav');
+    document.querySelectorAll('main > section').forEach((s) => { s.hidden = s.id !== 't-' + t.dataset.t; });
+    const a = t.dataset.t;
+    if (ESQ[a]) carregar(a); else if (a === 'definicoes') carregarDef(); else if (a === 'admins') carregarAdmins();
+    else if (a === 'painel') Promise.all([carregarProds(), carregarPeds()]).then(pintarPainel);
+  }
+  else if (t.dataset.p) abrirProd(+t.dataset.p);
+  else if (t.dataset.o) abrirPed(+t.dataset.o);
+  else if (t.dataset.fp) { const [f] = fotos.splice(+t.dataset.fp, 1); fotos.unshift(f); pintarFotos(); }
+  else if (t.dataset.fr) { fotos.splice(+t.dataset.fr, 1); pintarFotos(); }
+  else if (t.dataset.ra) remAdmin(t.dataset.ra);
+  else if (t.id === 'a-add') addAdmin();
+  else if (t.dataset.rmimg !== undefined) { $('#r-imagem_url').value = ''; $('#r-prev').innerHTML = ''; if (esq === 'banners') pvBanner(); }
+  else if (t.dataset.e) abrirReg(t.dataset.e, t.dataset.k);
+  else if (t.dataset.n) abrirReg(t.dataset.n, null);
+  else if (t.dataset.x) fechar();
+  else if (t.id === 'novo') abrirProd(null);
+  else if (t.id === 'f-gravar') gravarProd();
+  else if (t.id === 'f-apagar') apagarProd();
+  else if (t.id === 'o-gravar') gravarPed();
+  else if (t.id === 'r-gravar') gravarReg();
+  else if (t.id === 'r-apagar') apagarReg();
+  else if (t.id === 'd-gravar') gravarDef();
+});
+document.addEventListener('change', async (e) => {
+  const el = e.target, f = el.files && el.files[0];
+  if (el.id === 'f-file') { enviarFotos([...el.files]); el.value = ''; }
+  else if (el.id === 'r-file' && f) {
+    try { const u = await enviarUma(f, esq === 'categorias' ? 'categorias' : 'banners', esq === 'categorias' ? 700 : 1600, 'image/jpeg'); $('#r-imagem_url').value = u; $('#r-prev').innerHTML = `<div class="ft" style="width:${esq === 'categorias' ? '110px' : '100%'};height:110px"><img src="${esc(u)}" alt=""></div>`; if (esq === 'banners') pvBanner(); }
+    catch (x) { toast('Não foi possível enviar a imagem.'); }
+  } else if (el.id === 'd-file' && f) {
+    try { const u = await enviarUma(f, 'logo', 600, 'image/png'); $('#d-logo_url').value = u; $('#d-prev').innerHTML = `<div class="ft" style="width:140px;background:#e2e8f0"><img src="${esc(u)}" alt="" style="object-fit:contain"></div>`; toast('Logótipo carregado. Carregue em Guardar.'); }
+    catch (x) { toast('Não foi possível enviar o logótipo.'); }
+  }
+});
+$('#q').addEventListener('input', pintarProds);
+$('#fe').addEventListener('change', pintarPeds);
+document.addEventListener('input', (e) => { if (esq === 'banners' && !$('#sheet').hidden && e.target.id && e.target.id.startsWith('r-')) pvBanner(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fechar(); });
+
+$('#tema').addEventListener('click', () => { const n = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; document.documentElement.dataset.theme = n; try { localStorage.setItem('mavix_tema', n); } catch (e) {} });
+$('#mb').addEventListener('click', () => $('#app').classList.toggle('nav'));
+$('#scrim').addEventListener('click', () => $('#app').classList.remove('nav'));
+
+iniciar();
+</script>
+</body>
+</html>
